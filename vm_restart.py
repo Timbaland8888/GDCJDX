@@ -19,7 +19,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
+fh = logging.FileHandler('vmlog.log')
+fh.setFormatter(logging.DEBUG)
+fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(fh)
 class VcentTools(object):
     def __init__(self,host_ip,user,password):
         self.host_ip = host_ip
@@ -53,7 +56,7 @@ class VcentTools(object):
 
 
         except Exception as  e:
-            print e
+            logger.error(e)
 
         # 通过名称获取vm的实例
         vm = server_obj.get_vm_by_name(vm_name)
@@ -72,14 +75,14 @@ class VcentTools(object):
         try:
             server_obj.connect(self.host_ip, self.user,  self.password)
         except Exception as  e:
-            print e
+            logger.error(e)
 
         # 通过名称获取vm的实例
         vm = server_obj.get_vm_by_name(vm_name)
         if vm.is_powered_off() == False:
             try:
                 vm.reset()
-                for i in range(1,vm_hz):
+                for i in range(1,int(vm_hz)):
                     print u'虚拟机%s 正在重置中。。。。，请等待注册\n'%(vm_name)
                     time.sleep(1)
                 print u'重置完成'
@@ -87,7 +90,7 @@ class VcentTools(object):
 
                 return
             except Exception as e:
-                print e
+                print logger.error(e)
 
 
 
@@ -183,7 +186,7 @@ if __name__ == '__main__':
             for vmname in p.get_vmname(query_vm):
                 obj.vmaction(vmname,cf.get('vm_hz','vm_hz'))
                 logger.info(u'正在重置%s' %(vmname))
-                time.sleep(10)
+                # time.sleep(10)
         nowdate = datetime.datetime.now().strftime
         logger.info(u'现在时间%s,还未到才重置时间%s 请等待重置' %(now_date,cf.get('vm_retime','set_retime')))
         #检查是否有关机的虚拟机
